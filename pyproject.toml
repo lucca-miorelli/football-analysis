@@ -4,10 +4,13 @@ version = "0.1.0"
 description = ""
 authors = ["Lucca Miorelli"]
 readme = "README.md"
+packages = [{include = "football_analysis"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
 mplsoccer = "^1.2.4"
+pydantic = "^2.7.2"
+pydantic-settings = "^2.2.1"
 
 
 [tool.poetry.group.dev.dependencies]

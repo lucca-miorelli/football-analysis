@@ -8,7 +8,12 @@ packages = [{include = "football_analysis"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+dash = "^2.17.0"
+dash-core-components = "^2.0.0"
+dash-html-components = "^2.0.0"
 mplsoccer = "^1.2.4"
+pandas = "^2.2.2"
+plotly = "^5.22.0"
 pydantic = "^2.7.2"
 pydantic-settings = "^2.2.1"
 

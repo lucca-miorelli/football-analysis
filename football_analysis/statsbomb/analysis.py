@@ -15,16 +15,42 @@ from football_analysis.config.constant import (
 )
 
 class PassAnalysis:
-    def __init__(self, events_file_name=None, team_id=None):
-        self.file_path = os.path.join('data', events_file_name)
+    def __init__(self, game_id=None, team_id=None, starting_players_only:bool=True):
+        self.file_path = os.path.join('data', 'events', game_id + '.json')
         self.team_id = team_id
         with open(self.file_path, 'r') as f:
             self.data = json.load(f)
+        self.players_to_plot = [
+            str(player['player']['id'])
+            for x in self.data[:2] 
+            if 'tactics' in x
+            and 'lineup' in x['tactics'] # Only Starting XI
+            and x['team']['id'] == team_id 
+            for player in x['tactics']['lineup']
+        ]
+        if not starting_players_only:
+            replacements = [
+                str(x['substitution']['replacement']['id'])
+                for x in self.data
+                if x['type']['id'] == 19
+            ]
+            self.players_to_plot = self.players_to_plot + replacements
+        print(self.players_to_plot)
+        self.team_name = [x['team']['name'] for x in self.data[:2] if x['team']['id'] == team_id][0]
+        self.team_formation = [str(x['tactics']['formation']) for x in self.data[:2] if x['team']['id'] == team_id][0]
+        self.opp_team_name = [x['team']['name'] for x in self.data[:2] if x['team']['id'] != team_id][0]
+        self.get_team_passes()
+        self.get_pass_df()
+        self.get_players_df()
+        self.get_passers_avg_location()
+        self.get_passes_between_players()
+        self.enrich_passes_between_players()
 
     def get_team_passes(self):
         match_passes = [x for x in self.data if x['type']['id'] == 30]
         self.team_passes = [x for x in match_passes if x['team']['id'] == self.team_id]
         print(self.team_passes[10])
+        print(len(self.team_passes))
 
     def get_pass_df(self):
         self.team_passes_df = pd.DataFrame(
@@ -72,7 +98,7 @@ class PassAnalysis:
         players = []
 
         # iterate over the events data (replace events_data with your actual data variable)
-        for event in self.team_passes:
+        for event in self.data[:2]:
             if 'tactics' in event:
                 team_id = event['team']['id']
                 team_name = event['team']['name']
@@ -98,6 +124,7 @@ class PassAnalysis:
                   20: 'LAM', 21: 'LW', 22: 'RCF', 23: 'ST', 24: 'LCF', 25: 'SS'}
 
         self.players_df['position_abbreviation'] = self.players_df.position_id.map(formation_dict)
+        self.players_df['player_id'] = self.players_df['player_id'].astype(str)
 
         print(self.players_df.head())
     
@@ -168,20 +195,19 @@ class PassAnalysis:
 
     
     def plot_pass_network(self):
-        color = np.array(to_rgba('white'))
-        color = np.tile(color, (len(self.passes_between), 1))
-        c_transparency = self.passes_between.pass_count / self.passes_between.pass_count.max()
-        c_transparency = (c_transparency * (1 - MIN_TRANSPARENCY)) + MIN_TRANSPARENCY
-        color[:, 3] = c_transparency
+        # Define the minimum and maximum font size for the jersey number annotations
+        MIN_FONT_SIZE = 10
+        MAX_FONT_SIZE = 20
 
-        TEAM = 'Bayer Leverkusen'
-        OPPONENT = 'RB Leipzig'
-        FORMATION = '343'
         self.passes_between['width'] = (self.passes_between.pass_count / self.passes_between.pass_count.max() *
                                 MAX_LINE_WIDTH)
         self.passers_avg_location['marker_size'] = (self.passers_avg_location['total_passes']
                                                 / self.passers_avg_location['total_passes'].max() * MAX_MARKER_SIZE)
+        # Normalize marker_size to get values between 0 and 1
+        self.passers_avg_location['normalized_marker_size'] = self.passers_avg_location['marker_size'] / self.passers_avg_location['marker_size'].max()
 
+        # Scale normalized_marker_size to get font sizes between MIN_FONT_SIZE and MAX_FONT_SIZE
+        self.passers_avg_location['font_size'] = MIN_FONT_SIZE + self.passers_avg_location['normalized_marker_size'] * (MAX_FONT_SIZE - MIN_FONT_SIZE)
         pitch = Pitch(pitch_type='statsbomb', pitch_color='#22312b', line_color='#c7d5cc')
         fig, ax = pitch.draw(figsize=(16, 11), constrained_layout=True, tight_layout=False)
         fig.set_facecolor("#22312b")
@@ -193,37 +219,95 @@ class PassAnalysis:
                             axis=False,
                             title_space=0, grid_height=0.82, endnote_height=0.05)
         fig.set_facecolor("#22312b")
-        pass_lines = pitch.lines(self.passes_between.x, self.passes_between.y,
-                                self.passes_between.x_end, self.passes_between.y_end, lw=self.passes_between.width,
+
+        # Filter only starting players
+        temp_passes_between = self.passes_between.loc[
+            (self.passes_between.player_id.isin(self.players_to_plot)) &
+            (self.passes_between.pass_recipient_id.isin(self.players_to_plot))
+        ]
+        temp_passers_avg_location = self.passers_avg_location.loc[
+            self.passers_avg_location.player_id.isin(self.players_to_plot)
+        ]
+        print(type(temp_passers_avg_location.player_id[0]))
+        temp_passers_avg_location = temp_passers_avg_location.merge(self.players_df[['player_id', 'player_name', 'jersey_number', 'position_id', 'position_name']], on='player_id', how='left')
+        print(temp_passes_between.head())
+        print(temp_passers_avg_location.head())
+
+        color = np.array(to_rgba('white'))
+        color = np.tile(color, (len(temp_passes_between), 1))
+        c_transparency = temp_passes_between.pass_count / temp_passes_between.pass_count.max()
+        c_transparency = (c_transparency * (1 - MIN_TRANSPARENCY)) + MIN_TRANSPARENCY
+        color[:, 3] = c_transparency
+
+        # Pass lines
+        pitch.lines(temp_passes_between.x, temp_passes_between.y,
+                                temp_passes_between.x_end, temp_passes_between.y_end, lw=temp_passes_between.width,
                                 color=color, zorder=1, ax=axs['pitch'])
-        pass_nodes = pitch.scatter(self.passers_avg_location.x, self.passers_avg_location.y,
-                                s=self.passers_avg_location.marker_size,
+        # Passer nodes
+        pitch.scatter(temp_passers_avg_location.x, temp_passers_avg_location.y,
+                                s=temp_passers_avg_location.marker_size,
                                 color='#E32221', edgecolors='black', linewidth=1, alpha=1, ax=axs['pitch'])
-        for index, row in self.passers_avg_location.iterrows():
-            pitch.annotate(row.name, xy=(row.x, row.y), c='white', va='center',
-                        ha='center', size=16, weight='bold', ax=axs['pitch'])
+        for index, row in temp_passers_avg_location.iterrows():
+            print(row.jersey_number, row.x, row.y)
+            pitch.annotate(row.jersey_number, xy=(row.x, row.y), c='white', va='center',
+                        ha='center', size=row.font_size, weight='bold', ax=axs['pitch'])
 
         # Load a custom font.
         URL = 'https://raw.githubusercontent.com/googlefonts/roboto/main/src/hinted/Roboto-Regular.ttf'
         robotto_regular = FontManager(URL)
 
         # endnote /title
-        axs['endnote'].text(1, 0.5, '@your_twitter_handle', color='#c7d5cc',
+        axs['endnote'].text(1, 0.5, 'Lucca Miorelli', color='#c7d5cc',
                             va='center', ha='right', fontsize=15,
                             fontproperties=robotto_regular.prop)
-        TITLE_TEXT = f'{TEAM}, {FORMATION} formation'
+        TITLE_TEXT = f'{self.team_name}, {self.team_formation} formation'
         axs['title'].text(0.5, 0.7, TITLE_TEXT, color='#c7d5cc',
                         va='center', ha='center', fontproperties=robotto_regular.prop, fontsize=30)
-        axs['title'].text(0.5, 0.25, OPPONENT, color='#c7d5cc',
+        axs['title'].text(0.5, 0.25, self.opp_team_name, color='#c7d5cc',
                         va='center', ha='center', fontproperties=robotto_regular.prop, fontsize=18)
         plt.show()
 
-if __name__ == "__main__":
-    pass_analysis = PassAnalysis(events_file_name='3895052.json', team_id=904)
-    pass_analysis.get_team_passes()
-    pass_analysis.get_pass_df()
-    pass_analysis.get_players_df()
-    pass_analysis.get_passers_avg_location()
-    pass_analysis.get_passes_between_players()
-    pass_analysis.enrich_passes_between_players()
-    pass_analysis.plot_pass_network()
+def plotly_test_network(passes_between, passers_avg_location, players_to_plot, players_df):
+    # Define the minimum and maximum font size for the jersey number annotations
+    MIN_FONT_SIZE = 10
+    MAX_FONT_SIZE = 20
+
+    passes_between['width'] = (passes_between.pass_count / passes_between.pass_count.max() *
+                            MAX_LINE_WIDTH)
+    passers_avg_location['marker_size'] = (passers_avg_location['total_passes']
+                                            / passers_avg_location['total_passes'].max() * MAX_MARKER_SIZE)
+    # Normalize marker_size to get values between 0 and 1
+    passers_avg_location['normalized_marker_size'] = passers_avg_location['marker_size'] / passers_avg_location['marker_size'].max()
+
+    # Scale normalized_marker_size to get font sizes between MIN_FONT_SIZE and MAX_FONT_SIZE
+    passers_avg_location['font_size'] = MIN_FONT_SIZE + passers_avg_location['normalized_marker_size'] * (MAX_FONT_SIZE - MIN_FONT_SIZE)
+
+    # Filter only starting players
+    temp_passes_between = passes_between.loc[
+        (passes_between.player_id.isin(players_to_plot)) &
+        (passes_between.pass_recipient_id.isin(players_to_plot))
+    ]
+    temp_passers_avg_location = passers_avg_location.loc[
+        passers_avg_location.player_id.isin(players_to_plot)
+    ]
+    print(type(temp_passers_avg_location.player_id[0]))
+    temp_passers_avg_location = temp_passers_avg_location.merge(players_df[['player_id', 'player_name', 'jersey_number', 'position_id', 'position_name']], on='player_id', how='left')
+    print(temp_passes_between.head())
+    print(temp_passers_avg_location.head())
+
+    color = np.array(to_rgba('white'))
+    color = np.tile(color, (len(temp_passes_between), 1))
+    c_transparency = temp_passes_between.pass_count / temp_passes_between.pass_count.max()
+    c_transparency = (c_transparency * (1 - MIN_TRANSPARENCY)) + MIN_TRANSPARENCY
+    color[:, 3] = c_transparency
+    
+    return temp_passes_between, temp_passers_avg_location, color
+
+
+# if __name__ == "__main__":
+#     pass_analysis = PassAnalysis(
+#         game_id='3895194',
+#         team_id=904,
+#         starting_players_only=True
+#     )
+#     pass_analysis.plot_pass_network()

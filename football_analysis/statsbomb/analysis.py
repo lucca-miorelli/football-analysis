@@ -267,47 +267,61 @@ class PassAnalysis:
                         va='center', ha='center', fontproperties=robotto_regular.prop, fontsize=18)
         plt.show()
 
-def plotly_test_network(passes_between, passers_avg_location, players_to_plot, players_df):
-    # Define the minimum and maximum font size for the jersey number annotations
-    MIN_FONT_SIZE = 10
-    MAX_FONT_SIZE = 20
+    def plotly_test_network(
+            self,
+            passes_between=None,
+            passers_avg_location=None,
+            players_to_plot=None,
+            players_df=None
+    ):
+        if passes_between is None:
+            passes_between = self.passes_between
+        if passers_avg_location is None:
+            passers_avg_location = self.passers_avg_location
+        if players_to_plot is None:
+            players_to_plot = self.players_to_plot
+        if players_df is None:
+            players_df = self.players_df
+        # Define the minimum and maximum font size for the jersey number annotations
+        MIN_FONT_SIZE = 10
+        MAX_FONT_SIZE = 20
 
-    passes_between['width'] = (passes_between.pass_count / passes_between.pass_count.max() *
-                            MAX_LINE_WIDTH)
-    passers_avg_location['marker_size'] = (passers_avg_location['total_passes']
-                                            / passers_avg_location['total_passes'].max() * MAX_MARKER_SIZE)
-    # Normalize marker_size to get values between 0 and 1
-    passers_avg_location['normalized_marker_size'] = passers_avg_location['marker_size'] / passers_avg_location['marker_size'].max()
+        passes_between['width'] = (passes_between.pass_count / passes_between.pass_count.max() *
+                                MAX_LINE_WIDTH)
+        passers_avg_location['marker_size'] = (passers_avg_location['total_passes']
+                                                / passers_avg_location['total_passes'].max() * MAX_MARKER_SIZE)
+        # Normalize marker_size to get values between 0 and 1
+        passers_avg_location['normalized_marker_size'] = passers_avg_location['marker_size'] / passers_avg_location['marker_size'].max()
 
-    # Scale normalized_marker_size to get font sizes between MIN_FONT_SIZE and MAX_FONT_SIZE
-    passers_avg_location['font_size'] = MIN_FONT_SIZE + passers_avg_location['normalized_marker_size'] * (MAX_FONT_SIZE - MIN_FONT_SIZE)
+        # Scale normalized_marker_size to get font sizes between MIN_FONT_SIZE and MAX_FONT_SIZE
+        passers_avg_location['font_size'] = MIN_FONT_SIZE + passers_avg_location['normalized_marker_size'] * (MAX_FONT_SIZE - MIN_FONT_SIZE)
 
-    # Filter only starting players
-    temp_passes_between = passes_between.loc[
-        (passes_between.player_id.isin(players_to_plot)) &
-        (passes_between.pass_recipient_id.isin(players_to_plot))
-    ]
-    temp_passers_avg_location = passers_avg_location.loc[
-        passers_avg_location.player_id.isin(players_to_plot)
-    ]
-    print(type(temp_passers_avg_location.player_id[0]))
-    temp_passers_avg_location = temp_passers_avg_location.merge(players_df[['player_id', 'player_name', 'jersey_number', 'position_id', 'position_name']], on='player_id', how='left')
-    print(temp_passes_between.head())
-    print(temp_passers_avg_location.head())
+        # Filter only starting players
+        temp_passes_between = passes_between.loc[
+            (passes_between.player_id.isin(players_to_plot)) &
+            (passes_between.pass_recipient_id.isin(players_to_plot))
+        ]
+        temp_passers_avg_location = passers_avg_location.loc[
+            passers_avg_location.player_id.isin(players_to_plot)
+        ]
+        print(type(temp_passers_avg_location.player_id[0]))
+        temp_passers_avg_location = temp_passers_avg_location.merge(players_df[['player_id', 'player_name', 'jersey_number', 'position_id', 'position_name']], on='player_id', how='left')
+        print(temp_passes_between.head())
+        print(temp_passers_avg_location.head())
 
-    color = np.array(to_rgba('white'))
-    color = np.tile(color, (len(temp_passes_between), 1))
-    c_transparency = temp_passes_between.pass_count / temp_passes_between.pass_count.max()
-    c_transparency = (c_transparency * (1 - MIN_TRANSPARENCY)) + MIN_TRANSPARENCY
-    color[:, 3] = c_transparency
-    
-    return temp_passes_between, temp_passers_avg_location, color
+        color = np.array(to_rgba('white'))
+        color = np.tile(color, (len(temp_passes_between), 1))
+        c_transparency = temp_passes_between.pass_count / temp_passes_between.pass_count.max()
+        c_transparency = (c_transparency * (1 - MIN_TRANSPARENCY)) + MIN_TRANSPARENCY
+        color[:, 3] = c_transparency
+        
+        return temp_passes_between, temp_passers_avg_location, color
 
 
-# if __name__ == "__main__":
-#     pass_analysis = PassAnalysis(
-#         game_id='3895194',
-#         team_id=904,
-#         starting_players_only=True
-#     )
-#     pass_analysis.plot_pass_network()
+    # if __name__ == "__main__":
+    #     pass_analysis = PassAnalysis(
+    #         game_id='3895194',
+    #         team_id=904,
+    #         starting_players_only=True
+    #     )
+    #     pass_analysis.plot_pass_network()

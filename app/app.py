@@ -8,7 +8,10 @@ import pandas as pd
 import numpy as np
 
 from football_analysis.statsbomb.analysis import PassAnalysis
-from football_analysis.config.constant import BAYER_LEVERKUSEN_GAMES_BUNDESLIGA_23_24
+from football_analysis.config.constant import (
+    BAYER_LEVERKUSEN_GAMES_BUNDESLIGA_23_24,
+    GAME_ID_TITLE
+)
 from pitch_plot import create_pitch
 
 app = Dash(__name__, title='Football Analysis', update_title=None)
@@ -138,35 +141,52 @@ def update_player_id(selected_player_id):
 
 
 app.layout = html.Div(children=[
-    html.H1(children='Football Analysis', style={'textAlign': 'center', 'color': '#808080'}),
-    html.Div(children='Visualizing Pass Networks', style={'textAlign': 'center', 'color': '#808080'}),
-    dcc.Graph(
-        id='pass-network-graph',
-        figure={
-            'data': traces,
-            'layout': default_layout
-        },
-        config={'displayModeBar': False}
-    ),
-    html.Div(children=[
+    html.Div(className='header-section', children=[
+        html.Img(
+            src=app.get_asset_url('../assets/figures/bayer_leverkusen.png'),
+            style=dict(
+                width='120px',
+                height='90px',
+            )
+        ),
+        html.H1(children='Football Analysis', className='center-text'),
+    ]),
+    
+    html.Div(className='dropdown-section', children=[
         html.Div(children=[
             html.H3(children='Game ID', style={'color': '#808080'}),
             dcc.Dropdown(
                 id='game-dropdown',
-                options=[{'label': game_id, 'value': game_id} for game_id in available_game_ids],
+                options=[{'label': game[1], 'value': game[0]} for game in GAME_ID_TITLE.items()],
                 value=available_game_ids[0]
             )
-        ], style={'width': '50%', 'display': 'inline-block'}),
-        # Add the player-dropdown here
+        ], style={'width': '45%'}),
+        
         html.Div(children=[
             html.H3(children='Player ID', style={'color': '#808080'}),
             dcc.Dropdown(
                 id='player-dropdown',
             )
-        ], style={'width': '50%', 'display': 'inline-block'}),
+        ], style={'width': '45%'}),
+        
         html.Div(id='player-id-output', style={'color': '#808080'}),
     ]),
+    
+    html.Div(className='pass-network-section', children=[
+        dcc.Graph(
+            id='pass-network-graph',
+            figure={
+                'data': traces,
+                'layout': default_layout
+            },
+            config={'displayModeBar': False}
+        ),
+    ]),
+
 ], style={'backgroundColor': 'rgba(20, 20, 20, 0.9)'})
+
+
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)

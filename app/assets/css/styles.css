@@ -1,0 +1,32 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f3f3f3;
+}
+
+.header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(20, 20, 20, 0.9);
+    color: white;
+    padding: 10px 20px;
+}
+
+.dropdown-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center; 
+    padding: 20px;
+}
+
+.center-text {
+    text-align: center;
+    color: #808080;
+}
+
+.pass-network-section {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    padding: 20px;
+}

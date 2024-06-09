@@ -16,6 +16,7 @@ pandas = "^2.2.2"
 plotly = "^5.22.0"
 pydantic = "^2.7.2"
 pydantic-settings = "^2.2.1"
+ruff = "^0.4.8"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -24,3 +25,37 @@ ipykernel = "^6.29.4"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+exclude = ["nb/*"]
+
+[tool.ruff.lint]
+select = [
+    "B",
+    "C4",
+    "D",
+    "E",
+    "F",
+    "I",
+    "ISC",
+    "N",
+    "PGH",
+    "PL",
+    "PTH",
+    "Q",
+    "S",
+    "SIM",
+    "TRY",
+    "UP",
+    "W",
+    "YTT",
+    "RUF100",
+]
+ignore = ["D203", "D212", "ISC001", "TRY003"]
+
+[tool.ruff.lint.per-file-ignores]
+"test/*.py" = ["S101"]
+"__init__.py" = ["F401"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

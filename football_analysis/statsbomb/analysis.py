@@ -4,6 +4,7 @@ import json
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import to_rgba
+from collections import Counter
 
 from mplsoccer import Pitch, FontManager
 
@@ -320,7 +321,7 @@ class PassAnalysis:
         c_transparency = (c_transparency * (1 - MIN_TRANSPARENCY)) + MIN_TRANSPARENCY
         color[:, 3] = c_transparency
         
-        return temp_passes_between, temp_passers_avg_location, color
+        return temp_passes_between, temp_passers_avg_location
 
 
     # if __name__ == "__main__":
@@ -330,3 +331,125 @@ class PassAnalysis:
     #         starting_players_only=True
     #     )
     #     pass_analysis.plot_pass_network()
+
+class ShotAnalysis:
+    def __init__(self, game_id=None, team_id=None):
+        self.file_path = os.path.join('data', 'events', game_id + '.json')
+        self.team_id = team_id
+        with open(self.file_path, 'r') as f:
+            self.data = json.load(f)
+        self.team_name = [x['team']['name'] for x in self.data[:2] if x['team']['id'] == team_id][0]
+        self.opp_team_name = [x['team']['name'] for x in self.data[:2] if x['team']['id'] != team_id][0]
+        self.get_team_shots()
+        # self.get_shots_df()
+        # self.get_players_df()
+        # self.get_shots_by_player()
+    
+    def get_team_shots(self):
+        match_shots = [x for x in self.data if x['type']['id'] == 16]
+        self.team_shots = [x for x in match_shots if x['team']['id'] == self.team_id]
+        print(self.team_shots[10])
+        print(len(self.team_shots))
+    
+    # def get_shots_df(self):
+    #     self.team_shots_df = pd.DataFrame(
+    #         {
+    #             "id": [i["id"] for i in self.team_shots],
+    #             "index": [i["index"] for i in self.team_shots],
+    #             "period": [i["period"] for i in self.team_shots],
+    #             "timestamp": [i["timestamp"] for i in self.team_shots],
+    #             "minute": [i["minute"] for i in self.team_shots],
+    #             "second": [i["second"] for i in self.team_shots],
+    #             "type_name": [i["type"]["name"] for i in self.team_shots],
+    #             "type_id": [i["type"]["id"] for i in self.team_shots],
+    #             "possession": [i["possession"] for i in self.team_shots],
+    #             "possession_team_id": [i["possession_team"]["id"] for i in self.team_shots],
+    #             "possession_team_name": [i["possession_team"]["name"] for i in self.team_shots],
+    #             "play_pattern_id": [i["play_pattern"]["id"] for i in self.team_shots],
+    #             "play_pattern_name": [i["play_pattern"]["
+
+
+class Event:
+    def __init__(self, game_id: str, player_id: str|None=None):
+        self.file_path = os.path.join('data', 'events', game_id + '.json')
+        with open(self.file_path, 'r') as f:
+            self.data = json.load(f)
+        self.player_id = player_id
+        self.get_event_count()
+        
+
+    def get_event_count(self):
+        team_events = [
+            x
+            for x in self.data
+            if isinstance(x, dict)
+            and x.get('possession_team', {}).get('id') == 904
+            and x['type']['name'] in [
+                'Miscontrol',
+                'Block',
+                'Foul Committed',
+                'Foul Won',
+                'Interception',
+                'Ball Recovery',
+                'Shot',
+                'Goal Keeper',
+                'Duel',
+                'Clearance',
+                'Dribble',
+                'Dispossessed',
+                'Dribbled Past',
+                # 'Injury Stoppage',
+                # 'Shield',
+                'Bad Behaviour',
+                # '50/50'
+            ]
+        ]
+
+        opponent_events = [
+            x
+            for x in self.data
+            if isinstance(x, dict)
+            # and x.get('possession_team', {}).get('id') != 904
+            and x['type']['name'] in [
+                'Miscontrol',
+                'Block',
+                'Foul Committed',
+                'Foul Won',
+                'Interception',
+                'Ball Recovery',
+                'Shot',
+                'Goal Keeper',
+                'Duel',
+                'Clearance',
+                'Dribble',
+                'Dispossessed',
+                'Dribbled Past',
+                # 'Injury Stoppage',
+                # 'Shield',
+                'Bad Behaviour',
+                # '50/50'
+            ]
+        ]
+
+        if self.player_id is not None:
+            # Filter team_events by player_id
+            team_events = [
+                x
+                for x in team_events
+                if x.get('player', {}).get('id', None) == int(self.player_id)
+            ]
+
+            # Filter opponent_events by player_id (so it gets filtered out)
+            opponent_events = [
+                x
+                for x in opponent_events
+                if x.get('player', {}).get('id', None) == int(self.player_id)
+            ]
+
+        self.event_count = dict(Counter([x['type']['name'] for x in team_events]))
+        self.opp_event_count = dict(Counter([x['type']['name'] for x in opponent_events]))
+
+        # sort the dictionary alphabetically
+        self.event_count = dict(sorted(self.event_count.items()))
+        self.opp_event_count = dict(sorted(self.opp_event_count.items()))
+

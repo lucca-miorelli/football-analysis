@@ -31,6 +31,27 @@ body {
     padding: 20px;
 }
 
+.player-passes-section {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    padding: 20px;
+}
+
+.shots-section {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    padding: 20px;
+}
+
+.radar-section {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    padding: 20px;
+}
+
 .pitch-graphs-section {
     display: flex;
     justify-content: center;

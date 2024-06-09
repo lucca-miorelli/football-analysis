@@ -30,3 +30,10 @@ body {
     align-items: center; 
     padding: 20px;
 }
+
+.pitch-graphs-section {
+    display: flex;
+    justify-content: center;
+    align-items: center; 
+    padding: 20px;
+}

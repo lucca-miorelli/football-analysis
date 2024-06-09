@@ -45,6 +45,11 @@ class PassAnalysis:
         self.get_passers_avg_location()
         self.get_passes_between_players()
         self.enrich_passes_between_players()
+    
+    def get_player_passes(self, player_id):
+        player_passes = [x for x in self.team_passes if x['player']['id'] == player_id]
+        return player_passes
+
 
     def get_team_passes(self):
         match_passes = [x for x in self.data if x['type']['id'] == 30]

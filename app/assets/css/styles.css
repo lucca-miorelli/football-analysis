@@ -26,9 +26,10 @@ body {
 
 .pass-network-section {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center; 
     padding: 20px;
+    width: 100%;
 }
 
 .player-passes-section {
@@ -47,14 +48,23 @@ body {
 
 .radar-section {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     align-items: center; 
     padding: 20px;
+    width: 50%;
 }
 
 .pitch-graphs-section {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    align-items: center; 
+    padding: 20px;
+}
+
+
+.passes-and-shots-section {
+    display: flex;
+    justify-content: space-between;
     align-items: center; 
     padding: 20px;
 }

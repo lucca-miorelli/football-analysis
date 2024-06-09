@@ -11,6 +11,7 @@ from football_analysis.config.constant import (
 )
 from football_analysis.statsbomb.analysis import Event, PassAnalysis, ShotAnalysis
 
+
 app = Dash(__name__, title="Leverkusen 23-24 Statsbomb Data", update_title=None)
 server = app.server
 
@@ -140,8 +141,8 @@ def update_pass_analysis(game_id):
         },
         showlegend=False,
         autosize=False,
-        width=1200,
-        height=800,
+        width=800,
+        height=533.33,
         xaxis={
             "showgrid":False,
             "zeroline":False,
@@ -235,8 +236,8 @@ def update_player_passes(game_id, player_id=None):
             )
         )
         # Create individual points for pass start and end with hover text:
-        text_str = f"{player_name}<br><br>Play pattern: "
-        f"{pass_obj['play_pattern']['name']}<br>Recipient: {recipient_name}<br>"
+        text_str = f"{player_name}<br><br>Play pattern: " + \
+        f"{pass_obj['play_pattern']['name']}<br>Recipient: {recipient_name}<br>" + \
         f"Body Part: {body_part}<br>Outcome: {outcome_name}"
 
         traces.append(
@@ -280,8 +281,8 @@ def update_player_passes(game_id, player_id=None):
         },
         showlegend=False,
         autosize=False,
-        width=1200,
-        height=800,
+        width=800,
+        height=533.33,
         xaxis={
             "showgrid":False,
             "zeroline":False,
@@ -363,8 +364,8 @@ def update_shot_chart(game_id, player_id=None):
             )
         )
         # Create individual points for pass start and end with hover text:
-        text_str = f"{player_name} (xG: {statsbomb_xg:.2f})<br><br>Play pattern: "
-        f"{shot_obj['play_pattern']['name']}<br>Recipient: {type_name}<br>Body Part: "
+        text_str = f"{player_name} (xG: {statsbomb_xg:.2f})<br><br>Play pattern: " + \
+        f"{shot_obj['play_pattern']['name']}<br>Recipient: {type_name}<br>Body Part: " + \
         f"{body_part}<br>Outcome: {outcome_name}<br>Technique: {technique_name}"
 
         traces.append(
@@ -406,8 +407,8 @@ def update_shot_chart(game_id, player_id=None):
         },
         showlegend=False,
         autosize=False,
-        width=1200,
-        height=800,
+        width=800,
+        height=533.33,
         xaxis={
             "showgrid":False,
             "zeroline":False,
@@ -478,16 +479,11 @@ def update_radar_chart(game_id, player_id=None):
        },
         plot_bgcolor="rgba(20, 20, 20, 0.9)",
         paper_bgcolor="rgba(20, 20, 20, 0.9)",
+        width=600,
+        height=533.33,
     )
 
     return {"data": data, "layout": layout}
-
-# @app.callback(
-#     Output('player-id-output', 'children'),
-#     [Input('player-dropdown', 'value')]
-# )
-# def update_player_id(selected_player_id):
-#     return f'Player ID: {selected_player_id}'
 
 
 app.layout = html.Div(children=[
@@ -534,7 +530,6 @@ app.layout = html.Div(children=[
         # html.Div(id='player-id-output', style={'color': '#808080'}),
     ]),
     html.Div(className="pitch-graphs-section", children=[
-
         html.Div(className="pass-network-section", children=[
             dcc.Graph(
                 id="pass-network-graph",
@@ -542,52 +537,46 @@ app.layout = html.Div(children=[
                     "data": [],
                     "layout": default_layout
                 },
+                config={"displayModeBar": False},
+                # style={
+                #     'width': '50%',
+                # }
+            ),
+            dcc.Graph(
+                id="radar-chart",
+                figure={
+                    "data": [],
+                    "layout": default_layout
+                },
+                config={"displayModeBar": False},
+                # style={
+                #     'width': '50%',
+                # }
+            ),
+        ], style={"display": "flex"}),
+    ]),
+    html.Div(className="passes-and-shots-section", children=[
+        # html.Div(className="player-passes-section", children=[
+            dcc.Graph(
+                id="player-passes-graph",
+                figure={
+                    "data": [],
+                    "layout": default_layout
+                },
                 config={"displayModeBar": False}
             ),
-        ]),
+        # ]),
+        # html.Div(className="shots-section", children=[
+            dcc.Graph(
+                id="shots-graph",
+                figure={
+                    "data": [],
+                    "layout": default_layout
+                },
+                config={"displayModeBar": False}
+            ),
+        # ]),
     ]),
-        html.Div(className="player-passes-section", children=[
-        dcc.Graph(
-            id="player-passes-graph",
-            figure={
-                "data": [],
-                "layout": default_layout
-            },
-            config={"displayModeBar": False}
-        ),
-    ]),
-    html.Div(className="shots-section", children=[
-        dcc.Graph(
-            id="shots-graph",
-            figure={
-                "data": [],
-                "layout": default_layout
-            },
-            config={"displayModeBar": False}
-        ),
-    ]),
-    html.Div(className="radar-section", children=[
-        dcc.Graph(
-            id="radar-chart",
-            figure={
-                "data": [],
-                "layout": default_layout
-            },
-            config={"displayModeBar": False}
-        ),
-    ]),
-    # html.Div([
-    #     html.H1('Multi-page app with Dash Pages'),
-    #     html.Div([
-    #         html.Div(
-    #             dcc.Link(
-    #                 f"{page['name']} - {page['path']}", href=page["relative_path"])
-    #         ) for page in dash.page_registry.values()
-    #     ]),
-    #     dash.page_container
-    # ])
-
-
 ], style={"backgroundColor": "rgba(20, 20, 20, 0.9)"})
 
 

@@ -142,69 +142,6 @@ def create_pitch():
     ]
 
 
-# def create_half_pitch_rotated():
-#     # Define the function to rotate points
-#     def rotate_point(origin, point, angle):
-#         ox, oy = origin
-#         px, py = point
-
-#         qx = ox + np.cos(angle) * (px - ox) - np.sin(angle) * (py - oy)
-#         qy = oy + np.sin(angle) * (px - ox) + np.cos(angle) * (py - oy)
-
-#         return qx, qy
-
-#     # Function to create traces
-#     def create_trace(points, mode='lines', size=6, color="#808080"):
-#         x, y = zip(*points)
-#         if mode == 'markers':
-#             return go.Scatter(x=x, y=y, mode=mode, marker=dict(size=size, color=color), hoverinfo='none')
-#         else:
-#             return go.Scatter(x=x, y=y, mode=mode, line=dict(color=color, width=2), hoverinfo='none')
-
-#     # Half-pitch points
-#     half_pitch_points = [(0, 0), (60, 0), (60, 40), (0, 40), (0, 0)]
-#     half_pitch_points = [rotate_point((30, 20), p, np.pi/2) for p in half_pitch_points]
-
-#     # Midfield line points
-#     midfield_line_points = [(30, 0), (30, 40)]
-#     midfield_line_points = [rotate_point((30, 20), p, np.pi/2) for p in midfield_line_points]
-
-#     # Center circle points
-#     t = np.linspace(0, 2*np.pi, 100)
-#     center_circle_points = [(30 + 9.15 * np.cos(ti), 20 + 9.15 * np.sin(ti)) for ti in t]
-#     center_circle_points = [rotate_point((30, 20), p, np.pi/2) for p in center_circle_points]
-
-#     # Penalty area points
-#     penalty_area_points = [(60-16.5, 10), (60-16.5, 30), (60, 30), (60, 10), (60-16.5, 10)]
-#     penalty_area_points = [rotate_point((30, 20), p, np.pi/2) for p in penalty_area_points]
-
-#     # Six yard box points
-#     six_yard_box_points = [(60-5.5, 13), (60-5.5, 27), (60, 27), (60, 13), (60-5.5, 13)]
-#     six_yard_box_points = [rotate_point((30, 20), p, np.pi/2) for p in six_yard_box_points]
-
-#     # Penalty spot points
-#     penalty_spot_points = [(60-11, 20)]
-#     penalty_spot_points = [rotate_point((30, 20), p, np.pi/2) for p in penalty_spot_points]
-
-#     # Center spot points
-#     center_spot_points = [(30, 20)]
-#     center_spot_points = [rotate_point((30, 20), p, np.pi/2) for p in center_spot_points]
-
-#     # Penalty arc points
-#     penalty_arc_points = [(60-9.15, 20 + np.sin(ti) * 9.15) for ti in np.linspace(np.pi/6, 5*np.pi/6, 100)]
-#     penalty_arc_points = [rotate_point((30, 20), p, np.pi/2) for p in penalty_arc_points]
-
-#     return [
-#         create_trace(half_pitch_points),
-#         create_trace(midfield_line_points),
-#         create_trace(center_circle_points),
-#         create_trace(penalty_area_points),
-#         create_trace(six_yard_box_points),
-#         create_trace(penalty_spot_points, mode='markers'),
-#         create_trace(center_spot_points, mode='markers'),
-#         create_trace(penalty_arc_points)
-#     ]
-
 def create_half_pitch_rotated():
     # Create a trace for the pitch
     pitch_trace = go.Scatter(
@@ -214,15 +151,6 @@ def create_half_pitch_rotated():
         line=dict(color="#808080", width=2),
         hoverinfo='none'
     )
-
-    # # Add midfield line
-    # midfield_trace = go.Scatter(
-    #     x=[60, 60],
-    #     y=[0, 80],
-    #     mode='lines',
-    #     line=dict(color="#808080", width=2),
-    #     hoverinfo='none'
-    # )
 
     # Add center circle
     t = np.linspace(0, 2*np.pi, 100)

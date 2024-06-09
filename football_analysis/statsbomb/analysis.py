@@ -9,7 +9,6 @@ from collections import Counter
 from mplsoccer import Pitch, FontManager
 
 from football_analysis.config.constant import (
-    FORMATION_DICT,
     MIN_TRANSPARENCY,
     MAX_LINE_WIDTH,
     MAX_MARKER_SIZE

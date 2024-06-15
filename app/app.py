@@ -1,10 +1,10 @@
 """Bayern Leverkusen 2023/24 Bundesliga Analysis Dashboard."""
-import dash_core_components as dcc
-import dash_html_components as html
+from dash import dcc, html
 import plotly.graph_objs as go
 from dash import Dash
 from dash.dependencies import Input, Output
 from pitch_plot import create_pitch
+import math
 
 from football_analysis.config.constant import (
     GAME_ID_TITLE,
@@ -63,18 +63,19 @@ def update_pass_analysis(game_id):
     temp_passes_between, temp_passers_avg_location = pass_analysis.plotly_test_network()
     title_text = f"{pass_analysis.team_name} vs {pass_analysis.opp_team_name}"
 
+    resize_factor = 29/50
 
     # Update traces with new pass_analysis object
-    traces = create_pitch()
+    traces = create_pitch(resize_factor=resize_factor)
     for i in range(len(temp_passes_between)):
         traces.append(
             go.Scatter(
-                x=temp_passes_between[["x", "x_end"]].iloc[i].values,
-                y=temp_passes_between[["y", "y_end"]].iloc[i].values,
+                x=temp_passes_between[["x", "x_end"]].iloc[i].values*resize_factor,
+                y=temp_passes_between[["y", "y_end"]].iloc[i].values*resize_factor,
                 mode="lines",
                 line={
-                    "width": float(temp_passes_between["width"].iloc[i]),
-                    "color": "rgba(128, 128, 128, 0.75)"
+                    "width": float(temp_passes_between["width"].iloc[i])*resize_factor,
+                    "color": "rgba(128, 128, 128, 0.65)"
                 },
                 hovertemplate="Number of passes: %{text}",
                 text=f'{temp_passes_between["pass_count"].iloc[i]}'
@@ -83,19 +84,19 @@ def update_pass_analysis(game_id):
     # Add the marker trace
     traces.append(
         go.Scatter(
-            x=temp_passers_avg_location["x"],
-            y=temp_passers_avg_location["y"],
+            x=temp_passers_avg_location["x"]*resize_factor,
+            y=temp_passers_avg_location["y"]*resize_factor,
             mode="markers",
             marker={
-                "size":temp_passers_avg_location["normalized_marker_size"],
+                "size":temp_passers_avg_location["normalized_marker_size"]*resize_factor,
                 "sizemode":"diameter",
-                "sizemin":4,
-                "sizeref":1/30,
+                "sizemin":4*resize_factor,
+                "sizeref":1/30*resize_factor,
                 "color":"#E32221",
                 "opacity":1,
                 "line":{
                     "color": "#E32221",
-                    "width": 10
+                    "width": 10*resize_factor
                 }
             },
             text=temp_passers_avg_location["player_name"] + " (" +
@@ -115,12 +116,12 @@ def update_pass_analysis(game_id):
     annotations = []
     for _, row in temp_passers_avg_location.iterrows():
         annotations.append({
-            "x":row["x"],
-            "y":row["y"],
+            "x":row["x"]*resize_factor,
+            "y":row["y"]*resize_factor,
             "text":str(row["jersey_number"]),
             "showarrow":False,
             "font":{
-                "size":15*row["normalized_marker_size"]+8,
+                "size":(15*row["normalized_marker_size"]+8)*resize_factor,
                 "color":"white",
                 "family":"Arial, bold"
             },
@@ -133,7 +134,7 @@ def update_pass_analysis(game_id):
             "text": title_text,
             "font": {
                 "color": "#808080",
-                "size": 24,  # adjust as needed
+                "size": 24*resize_factor,  # adjust as needed
                 "family": "Arial, bold"
             },
             "xanchor": "center",
@@ -141,19 +142,19 @@ def update_pass_analysis(game_id):
         },
         showlegend=False,
         autosize=False,
-        width=800,
-        height=533.33,
+        width=1200*resize_factor,
+        height=800*resize_factor,
         xaxis={
             "showgrid":False,
             "zeroline":False,
             "showticklabels":False,
-            "range":[0, 120]
+            "range":[value*resize_factor for value in[0, 120]]
         },
         yaxis={
             "showgrid":False,
             "zeroline":False,
             "showticklabels":False,
-            "range":[0, 80]
+            "range":[value*resize_factor for value in [0, 80]]
         },
         annotations=annotations,
         plot_bgcolor="rgba(20, 20, 20, 0.9)",
@@ -188,6 +189,8 @@ def update_player_passes(game_id, player_id=None):
     # player_passes = pass_analysis.get_player_passes(int(player_id))
     player_passes = pass_analysis.team_passes
 
+    resize_factor = 29/50
+
     # If player_id is not None, filter passes by player_id
     if player_id:
         player_passes = [
@@ -202,7 +205,7 @@ def update_player_passes(game_id, player_id=None):
 
     annotations = []
 
-    traces = create_pitch()
+    traces = create_pitch(resize_factor=resize_factor)
     for pass_obj in player_passes:
 
         start_location = pass_obj["location"]
@@ -210,11 +213,11 @@ def update_player_passes(game_id, player_id=None):
 
 
         # If 'recipient' key exists, consider pass complete
-        if "recipient" in pass_obj["pass"]:
-            arrow_color = "rgba(128, 128, 128, 1)"
-        else:
+        if pass_obj.get('pass', {}).get('outcome', {}).get('name', '') == "Incomplete" or "recipient" not in pass_obj["pass"]:
             # draw red arrow for incomplete passes
-            arrow_color = "rgba(255, 0, 0, 0.75)"
+            arrow_color = "rgba(255, 0, 0, 0.65)"
+        else:
+            arrow_color = "rgba(128, 128, 128, 1)"
 
         # Get recipient name if exists
         recipient_name = pass_obj["pass"].get("recipient", {}).get("name", "No recipient")  # noqa: E501
@@ -228,10 +231,10 @@ def update_player_passes(game_id, player_id=None):
         # Draw the shaft of the arrow as a line without hover text:
         traces.append(
             go.Scatter(
-                x=[start_location[0], end_location[0]],
-                y=[start_location[1], end_location[1]],
+                x=[value*resize_factor for value in [start_location[0], end_location[0]]],
+                y=[value*resize_factor for value in [start_location[1], end_location[1]]],
                 mode="lines",
-                line={"width":2, "color":arrow_color},
+                line={"width":2*resize_factor, "color":arrow_color},
                 hoverinfo="none"  # Disable hover for the lines
             )
         )
@@ -242,10 +245,10 @@ def update_player_passes(game_id, player_id=None):
 
         traces.append(
             go.Scatter(
-                x=[start_location[0], end_location[0]],
-                y=[start_location[1], end_location[1]],
+                x=[value*resize_factor for value in [start_location[0], end_location[0]]],
+                y=[value*resize_factor for value in [start_location[1], end_location[1]]],
                 mode="markers",
-                marker={"size": 5, "color":"rgba(128, 128, 128, 0.0)"},
+                marker={"size": 5*resize_factor, "color":"rgba(128, 128, 128, 0.0)"},
                 text=[text_str, text_str],
                 hovertemplate="%{text}<extra></extra>"
             )
@@ -253,10 +256,10 @@ def update_player_passes(game_id, player_id=None):
         # Add an arrow annotation for the pass:
         annotations.append(
             {
-                "y":end_location[1],
-                "x":end_location[0],
-                "ay":start_location[1],
-                "ax":start_location[0],
+                "y":end_location[1]*resize_factor,
+                "x":end_location[0]*resize_factor,
+                "ay":start_location[1]*resize_factor,
+                "ax":start_location[0]*resize_factor,
                 "xref":"x",
                 "yref":"y",
                 "axref":"x",
@@ -273,7 +276,7 @@ def update_player_passes(game_id, player_id=None):
             "text": title_text,
             "font": {
                 "color": "#808080",
-                "size": 24,  # adjust as needed
+                "size": 24*resize_factor,  # adjust as needed
                 "family": "Arial, bold"
             },
             "xanchor": "center",
@@ -281,21 +284,21 @@ def update_player_passes(game_id, player_id=None):
         },
         showlegend=False,
         autosize=False,
-        width=800,
-        height=533.33,
+        width=1200*resize_factor, # 1200, 800, 600
+        height=800*resize_factor, # 800, 533.33, 400
         xaxis={
             "showgrid":False,
             "zeroline":False,
             "showticklabels":False,
-            "range":[0, 120]
+            "range":[value*resize_factor for value in [0, 120]]
         },
         yaxis={
             "showgrid": False,
             "zeroline": False,
             "showticklabels": False,
-            "range": [0, 80]
+            "range": [value*resize_factor for value in [0, 80]]
         },
-        plot_bgcolor="rgba(20, 20, 20, 0.9)",
+        plot_bgcolor="rgba(20, 20, 20, 0.0)",
         paper_bgcolor="rgba(20, 20, 20, 0.9)",
         annotations=annotations
     )
@@ -320,10 +323,13 @@ def update_shot_chart(game_id, player_id=None):
         player_shots = [
             shot for shot in player_shots if shot["player"]["id"] == int(player_id)
         ]
+    else:
+        player_shots = player_shots[:100]
 
     annotations = []
+    resize_factor = 29/50
 
-    traces = create_pitch()
+    traces = create_pitch(resize_factor=resize_factor)
     for shot_obj in player_shots:
 
         start_location = shot_obj["location"]
@@ -332,7 +338,7 @@ def update_shot_chart(game_id, player_id=None):
 
         # If outcome is Goal, set color to green
         if shot_obj["shot"]["outcome"]["name"] == "Goal":
-            marker_color = "rgba(0, 255, 0, 0.75)"
+            marker_color = "rgba(0, 255, 0, 0.65)"
         else:
             # draw red arrow for missed shots
             marker_color = "rgba(255, 0, 0, 0.50)"
@@ -349,15 +355,18 @@ def update_shot_chart(game_id, player_id=None):
         player_name = shot_obj["player"]["name"]
         # Get statsbomb_xg
         statsbomb_xg = shot_obj["shot"].get("statsbomb_xg", "No xG")
+        # Adjust marker size based on logarithmic scale
+        marker_size = math.log(statsbomb_xg + 1) * 100
+
 
         # Draw the shaft of the arrow as a line without hover text:
         traces.append(
             go.Scatter(
-                x=[start_location[0]],
-                y=[start_location[1]],
+                x=[value*resize_factor for value in [start_location[0]]],
+                y=[value*resize_factor for value in [start_location[1]]],
                 mode="markers",
                 line={
-                    "width":4,
+                    "width":4*resize_factor,
                     "color":marker_color
                 },
                 hoverinfo="none"  # Disable hover for the lines
@@ -370,20 +379,27 @@ def update_shot_chart(game_id, player_id=None):
 
         traces.append(
             go.Scatter(
-                x=[start_location[0]],
-                y=[start_location[1]],
+                x=[value*resize_factor for value in [start_location[0]]],
+                y=[value*resize_factor for value in [start_location[1]]],
                 mode="markers",
-                marker={"size":1, "color": "rgba(128, 128, 128, 0.0)"},
+                marker={"size":1*resize_factor, "color": "rgba(128, 128, 128, 0.0)"},
+                # marker={
+                #     "size":marker_size,
+                #     "sizemode":"diameter",
+                #     "sizeref":1,
+                #     "color":marker_color,
+                #     "opacity":0.65
+                # },
                 text=[text_str, text_str],
                 hovertemplate="%{text}<extra></extra>"
             )
         )
         # Add an arrow annotation for the pass:
         annotations.append({
-                "y":end_location[1],
-                "x":end_location[0],
-                "ay":start_location[1],
-                "ax":start_location[0],
+                "y":end_location[1]*resize_factor,
+                "x":end_location[0]*resize_factor,
+                "ay":start_location[1]*resize_factor,
+                "ax":start_location[0]*resize_factor,
                 "xref":"x",
                 "yref":"y",
                 "axref":"x",
@@ -399,7 +415,7 @@ def update_shot_chart(game_id, player_id=None):
             "text": "Shots by Team",
             "font": {
                 "color": "#808080",
-                "size": 24,  # adjust as needed
+                "size": 24*resize_factor,  # adjust as needed
                 "family": "Arial, bold"
             },
             "xanchor": "center",
@@ -407,19 +423,19 @@ def update_shot_chart(game_id, player_id=None):
         },
         showlegend=False,
         autosize=False,
-        width=800,
-        height=533.33,
+        width=1200*resize_factor,
+        height=800*resize_factor,
         xaxis={
             "showgrid":False,
             "zeroline":False,
             "showticklabels":False,
-            "range":[0, 120]
+            "range":[value*resize_factor for value in [0, 120]]
         },
         yaxis={
             "showgrid": False,
             "zeroline": False,
             "showticklabels": False,
-            "range":[0, 80]
+            "range":[value*resize_factor for value in[0, 80]]
         },
         plot_bgcolor="rgba(20, 20, 20, 0.9)",
         paper_bgcolor="rgba(20, 20, 20, 0.9)",
@@ -448,16 +464,16 @@ def update_radar_chart(game_id, player_id=None):
             theta=list(event_count.keys()),
             fill="toself",
             name="Player Events",
-            fillcolor="rgba(255, 0, 0, 0.75)",
-            line={"color":"rgba(255, 0, 0, 0.75)"}
+            fillcolor="rgba(255, 0, 0, 0.65)",
+            line={"color":"rgba(255, 0, 0, 0.65)"}
         ),
         # go.Scatterpolar(
         #     r=list(opp_event_count.values()),
         #     theta=list(opp_event_count.keys()),
         #     fill='toself',
         #     name='Opponent Events',
-        #     fillcolor='rgba(128, 128, 128, 0.75)',
-        #     line=dict(color='rgba(128, 128, 128, 0.75)')
+        #     fillcolor='rgba(128, 128, 128, 0.65)',
+        #     line=dict(color='rgba(128, 128, 128, 0.65)')
         # )
     ]
 
@@ -485,9 +501,84 @@ def update_radar_chart(game_id, player_id=None):
 
     return {"data": data, "layout": layout}
 
+@app.callback(
+    Output("shot-bubble-graph", "figure"),
+    [
+        Input("game-dropdown", "value"),
+        Input("player-dropdown", "value")
+    ]
+)
+def update_shot_bubble_chart(game_id, player_id=None):
+    print(type(player_id))
+    """Update the shot bubble chart."""
+    shot_analysis = create_shot_analysis(game_id)
+    player_shots = shot_analysis.team_shots
+
+    # If player_id is not None, filter shots by player_id
+    if player_id:
+        player_shots = [
+            shot for shot in player_shots if shot["player"]["id"] == int(player_id)
+        ]
+    else:
+        # Process player_shots in a way that it can be plotted with data for all players
+        print(player_shots)
+        # pass  # replace this with actual code
+
+    resize_factor = 29/50
+
+    traces = create_pitch(resize_factor=resize_factor)
+    for shot_obj in player_shots:
+
+        start_location = shot_obj["location"]
+        # end_location = shot_obj["shot"]["end_location"]
+
+        # If outcome is Goal, set color to green
+        if shot_obj["shot"]["outcome"]["name"] == "Goal":
+            marker_color = "rgba(0, 255, 0, 0.65)"
+        else:
+            # draw red arrow for missed shots
+            marker_color = "rgba(255, 0, 0, 0.50)"
+
+        # Get technique name if exists
+        technique_name = shot_obj["shot"].get("technique", {}).get("name", "No technique")
+        # Get body part if exists
+        body_part = shot_obj["shot"].get("body_part", {}).get("name", "No body part")
+        # Get outcome name if exists
+        outcome_name = shot_obj["shot"].get("outcome", {}).get("name", "Complete")
+        # Get type name if exists
+        type_name = shot_obj["shot"].get("type", {}).get("name", "No type")
+        # Get player name
+        player_name = shot_obj["player"]["name"]
+        # Get statsbomb_xg
+        statsbomb_xg = shot_obj["shot"].get("statsbomb_xg", "No xG")
+        # Adjust marker size based on logarithmic scale
+        marker_size = math.log(statsbomb_xg + 1) * 100
+
+        text_str = f"{player_name} (xG: {statsbomb_xg:.2f})<br><br>Play pattern: " + \
+                f"{shot_obj['play_pattern']['name']}<br>Recipient: {type_name}<br>Body Part: " + \
+                f"{body_part}<br>Outcome: {outcome_name}<br>Technique: {technique_name}"
+
+        traces.append(
+            go.Scatter(
+                x=[start_location[0]*resize_factor],
+                y=[start_location[1]*resize_factor],
+                mode="markers",
+                marker={
+                    "size":marker_size,
+                    "sizemode":"diameter",
+                    "sizeref":1,
+                    "color":marker_color,
+                    "opacity":0.65
+                },
+                text=[text_str],
+                hovertemplate="%{text}<extra></extra>"
+            )
+        )
+    return {"data": traces, "layout": default_layout}
+
 
 app.layout = html.Div(children=[
-    html.Div(className="header-section", children=[
+    html.Div(className="header-section", style={'textAlign': 'center'}, children=[
         html.Img(
             src=app.get_asset_url("../assets/figures/bayer_leverkusen.png"),
             style={
@@ -530,7 +621,7 @@ app.layout = html.Div(children=[
         # html.Div(id='player-id-output', style={'color': '#808080'}),
     ]),
     html.Div(className="pitch-graphs-section", children=[
-        html.Div(className="pass-network-section", children=[
+        html.Div(id="pass-network-container", children=[
             dcc.Graph(
                 id="pass-network-graph",
                 figure={
@@ -539,9 +630,13 @@ app.layout = html.Div(children=[
                 },
                 config={"displayModeBar": False},
                 # style={
+                #     'flexBasis': '50%',
                 #     'width': '50%',
+                #     'margin': 'auto'  # Center and align horizontally
                 # }
-            ),
+            )
+        ]),
+        html.Div(id="radar-chart-container", children=[
             dcc.Graph(
                 id="radar-chart",
                 figure={
@@ -550,35 +645,63 @@ app.layout = html.Div(children=[
                 },
                 config={"displayModeBar": False},
                 # style={
+                #     'flexBasis': '50%',
                 #     'width': '50%',
+                #     'margin': 'auto'  # Center and align horizontally
                 # }
             ),
-        ], style={"display": "flex"}),
+        ]),
     ]),
     html.Div(className="passes-and-shots-section", children=[
-        # html.Div(className="player-passes-section", children=[
+        html.Div(className="player-passes-section", children=[
             dcc.Graph(
                 id="player-passes-graph",
                 figure={
                     "data": [],
                     "layout": default_layout
                 },
-                config={"displayModeBar": False}
+                config={"displayModeBar": False},
+                # style={
+                #     'flexBasis': '50%',
+                #     'width': '50vw',
+                #     'height': '100vh',  # Adjust the height as needed
+                #     'margin': 'auto'  # Center and align horizontally
+                # }
             ),
-        # ]),
-        # html.Div(className="shots-section", children=[
+        ]),
+        html.Div(className="shots-section", children=[
             dcc.Graph(
                 id="shots-graph",
                 figure={
                     "data": [],
                     "layout": default_layout
                 },
-                config={"displayModeBar": False}
+                config={"displayModeBar": False},
+                # style={
+                #     'flexBasis': '50%',
+                #     'width': '50vw',
+                #     'height': '100vh',  # Adjust the height as needed
+                #     'margin': 'auto'  # Center and align horizontally
+                # }
             ),
-        # ]),
+        ]),
+    ]),
+    html.Div(className="shots-bubble-section", children=[
+        html.Div(className="shots-bubble-chart", children=[
+            dcc.Graph(
+                id="shot-bubble-graph",
+                figure={
+                    "data": [],
+                    "layout": default_layout
+                },
+                config={"displayModeBar": False},
+                # style={
+                #     'margin': 'auto'  # Center and align horizontally
+                # }
+            )
+        ]),
     ]),
 ], style={"backgroundColor": "rgba(20, 20, 20, 0.9)"})
-
 
 
 

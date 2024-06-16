@@ -12,7 +12,9 @@ from football_analysis.config.constant import (
 from football_analysis.statsbomb.analysis import Event, PassAnalysis, ShotAnalysis
 
 
-app = Dash(__name__, title="Leverkusen 23-24 Statsbomb Data", update_title=None)
+app = Dash(
+    __name__, title="Leverkusen 23-24 Statsbomb Data", update_title=None
+)
 server = app.server
 
 default_layout = go.Layout(
@@ -509,7 +511,6 @@ def update_radar_chart(game_id, player_id=None):
     ]
 )
 def update_shot_bubble_chart(game_id, player_id=None):
-    print(type(player_id))
     """Update the shot bubble chart."""
     shot_analysis = create_shot_analysis(game_id)
     player_shots = shot_analysis.team_shots
@@ -519,10 +520,6 @@ def update_shot_bubble_chart(game_id, player_id=None):
         player_shots = [
             shot for shot in player_shots if shot["player"]["id"] == int(player_id)
         ]
-    else:
-        # Process player_shots in a way that it can be plotted with data for all players
-        print(player_shots)
-        # pass  # replace this with actual code
 
     resize_factor = 29/50
 
@@ -706,4 +703,4 @@ app.layout = html.Div(children=[
 
 
 if __name__ == "__main__":
-    app.run_server(debug=True)
+    app.run_server(host='0.0.0.0', debug=True, port=8050)

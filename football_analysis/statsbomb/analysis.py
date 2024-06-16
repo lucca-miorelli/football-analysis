@@ -35,7 +35,7 @@ class PassAnalysis:
                 if x['type']['id'] == 19
             ]
             self.players_to_plot = self.players_to_plot + replacements
-        print(self.players_to_plot)
+        # #print(self.players_to_plot)
         self.team_name = [x['team']['name'] for x in self.data[:2] if x['team']['id'] == team_id][0]
         self.team_formation = [str(x['tactics']['formation']) for x in self.data[:2] if x['team']['id'] == team_id][0]
         self.opp_team_name = [x['team']['name'] for x in self.data[:2] if x['team']['id'] != team_id][0]
@@ -54,8 +54,8 @@ class PassAnalysis:
     def get_team_passes(self):
         match_passes = [x for x in self.data if x['type']['id'] == 30]
         self.team_passes = [x for x in match_passes if x['team']['id'] == self.team_id]
-        print(self.team_passes[10])
-        print(len(self.team_passes))
+        #print(self.team_passes[10])
+        #print(len(self.team_passes))
 
     def get_pass_df(self):
         self.team_passes_df = pd.DataFrame(
@@ -94,9 +94,9 @@ class PassAnalysis:
                 "pass_outcome_name": [i["pass"].get("outcome", {}).get("name", None) for i in self.team_passes],
             }
         )
-        print(self.team_passes_df.head())
-        # Print unique team names
-        print(self.team_passes_df['team_name'].unique())
+        #print(self.team_passes_df.head())
+        # #print unique team names
+        #print(self.team_passes_df['team_name'].unique())
 
     
     def get_players_df(self):
@@ -131,7 +131,7 @@ class PassAnalysis:
         self.players_df['position_abbreviation'] = self.players_df.position_id.map(formation_dict)
         self.players_df['player_id'] = self.players_df['player_id'].astype(str)
 
-        print(self.players_df.head())
+        #print(self.players_df.head())
     
     def get_passers_avg_location(self):
         passers_avg_location = self.team_passes_df.groupby(['player_id']).agg(
@@ -157,7 +157,7 @@ class PassAnalysis:
 
         self.passers_avg_location = passers_avg_location
 
-        print(self.passers_avg_location.head())
+        #print(self.passers_avg_location.head())
     
     def get_passes_between_players(self):
         # create a temporary dataframe with sorted player_id and pass_recipient_id
@@ -185,7 +185,7 @@ class PassAnalysis:
 
         self.passes_between = passes_between
 
-        print(self.passes_between.head())
+        #print(self.passes_between.head())
     
     def enrich_passes_between_players(self):
         self.passes_between = (
@@ -196,7 +196,7 @@ class PassAnalysis:
                 .rename(columns={'player_id_x': 'player_id'})
         )
 
-        print(self.passes_between.head())
+        #print(self.passes_between.head())
 
     
     def plot_pass_network(self):
@@ -233,10 +233,10 @@ class PassAnalysis:
         temp_passers_avg_location = self.passers_avg_location.loc[
             self.passers_avg_location.player_id.isin(self.players_to_plot)
         ]
-        print(type(temp_passers_avg_location.player_id[0]))
+        #print(type(temp_passers_avg_location.player_id[0]))
         temp_passers_avg_location = temp_passers_avg_location.merge(self.players_df[['player_id', 'player_name', 'jersey_number', 'position_id', 'position_name']], on='player_id', how='left')
-        print(temp_passes_between.head())
-        print(temp_passers_avg_location.head())
+        #print(temp_passes_between.head())
+        #print(temp_passers_avg_location.head())
 
         color = np.array(to_rgba('white'))
         color = np.tile(color, (len(temp_passes_between), 1))
@@ -253,7 +253,7 @@ class PassAnalysis:
                                 s=temp_passers_avg_location.marker_size,
                                 color='#E32221', edgecolors='black', linewidth=1, alpha=1, ax=axs['pitch'])
         for index, row in temp_passers_avg_location.iterrows():
-            print(row.jersey_number, row.x, row.y)
+            #print(row.jersey_number, row.x, row.y)
             pitch.annotate(row.jersey_number, xy=(row.x, row.y), c='white', va='center',
                         ha='center', size=row.font_size, weight='bold', ax=axs['pitch'])
 
@@ -309,10 +309,10 @@ class PassAnalysis:
         temp_passers_avg_location = passers_avg_location.loc[
             passers_avg_location.player_id.isin(players_to_plot)
         ]
-        print(type(temp_passers_avg_location.player_id[0]))
+        #print(type(temp_passers_avg_location.player_id[0]))
         temp_passers_avg_location = temp_passers_avg_location.merge(players_df[['player_id', 'player_name', 'jersey_number', 'position_id', 'position_name']], on='player_id', how='left')
-        print(temp_passes_between.head())
-        print(temp_passers_avg_location.head())
+        #print(temp_passes_between.head())
+        #print(temp_passers_avg_location.head())
 
         color = np.array(to_rgba('white'))
         color = np.tile(color, (len(temp_passes_between), 1))
@@ -347,8 +347,6 @@ class ShotAnalysis:
     def get_team_shots(self):
         match_shots = [x for x in self.data if x['type']['id'] == 16]
         self.team_shots = [x for x in match_shots if x['team']['id'] == self.team_id]
-        print(self.team_shots[10])
-        print(len(self.team_shots))
     
     # def get_shots_df(self):
     #     self.team_shots_df = pd.DataFrame(

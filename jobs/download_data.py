@@ -5,6 +5,8 @@ import requests
 from football_analysis.config.constant import (
     BAYER_LEVERKUSEN_GAMES_BUNDESLIGA_23_24, DATA_REPOSITORY_URL)
 
+from football_analysis.statsbomb.scrape import AWS
+
 
 def download_events_data(
     game_ids:list,
@@ -31,10 +33,15 @@ def download_events_data(
         # Save as json file in data folder
         file_path = f'{local_data_folder}{game_id}.json'
 
-        with open(file_path, 'w') as f:
-            json.dump(data, f)
+        # with open(file_path, 'w') as f:
+        #     json.dump(data, f)
         
         print(f"Saved {game_id=}")
+
+        # Save to aws/minio
+        aws = AWS()
+        aws.save_to_json(data, gh_folder, game_id)
+
 
 def download_match_metadata(
         data_repository_url:str,
@@ -58,10 +65,14 @@ def download_match_metadata(
     matches_metadata = json.loads(matches_metadata.text)
 
     # Save as json file in data folder
-    with open(file_path, 'w') as f:
-        json.dump(matches_metadata, f)
+    # with open(file_path, 'w') as f:
+    #     json.dump(matches_metadata, f)
     
     print(f"Saved {file_path}")
+
+    # Save to aws/minio
+    aws = AWS()
+    aws.save_to_json(matches_metadata, 'matches/9', '281')
 
 def download_three_sixty_data(
     game_ids:list,
@@ -88,10 +99,14 @@ def download_three_sixty_data(
         # Save as json file in data folder
         file_path = f'{local_data_folder}{game_id}.json'
 
-        with open(file_path, 'w') as f:
-            json.dump(data, f)
+        # with open(file_path, 'w') as f:
+        #     json.dump(data, f)
 
         print(f"Saved {file_path}")
+
+        # Save to aws/minio
+        aws = AWS()
+        aws.save_to_json(data, 'three-sixty', game_id)
 
 
 def main(
@@ -124,6 +139,6 @@ def main(
 if __name__ == "__main__":
     
     main(
-        game_ids=BAYER_LEVERKUSEN_GAMES_BUNDESLIGA_23_24,
+        game_ids=BAYER_LEVERKUSEN_GAMES_BUNDESLIGA_23_24[:5],
         data_repository_url=DATA_REPOSITORY_URL
     )

@@ -29,5 +29,16 @@ services:
       "
     env_file:
       - .env
+
+  football-analysis-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    ports:
+      - "8050:8050"
+    
+
 volumes:
   minio_storage:

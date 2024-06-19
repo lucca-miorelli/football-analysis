@@ -2,3 +2,5 @@ data/*
 .env
 __pycache__/
 *.pyc
+*.ipynb
+*.json

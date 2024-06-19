@@ -139,6 +139,6 @@ def main(
 if __name__ == "__main__":
     
     main(
-        game_ids=BAYER_LEVERKUSEN_GAMES_BUNDESLIGA_23_24[:5],
+        game_ids=BAYER_LEVERKUSEN_GAMES_BUNDESLIGA_23_24[:],
         data_repository_url=DATA_REPOSITORY_URL
     )

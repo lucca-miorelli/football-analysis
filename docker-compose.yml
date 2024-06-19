@@ -18,10 +18,6 @@ services:
       - minio
     entrypoint: >
       /bin/sh -c "
-      echo Root User: ${MINIO_ROOT_USER};
-      echo Root Password: ${MINIO_ROOT_PASSWORD};
-      echo Default Bucket: ${MINIO_DEFAULT_BUCKET};
-      sleep 5;
       /usr/bin/mc alias set dev_minio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD};
       /usr/bin/mc mb --ignore-existing dev_minio/${MINIO_DEFAULT_BUCKET};
       /usr/bin/mc policy set public dev_minio/${MINIO_DEFAULT_BUCKET};
@@ -30,15 +26,27 @@ services:
     env_file:
       - .env
 
+  data-downloader:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["download"]
+    depends_on:
+      - minio_create_buckets
+    volumes:
+      - .:/app
+
   football-analysis-dashboard:
     build:
       context: .
       dockerfile: Dockerfile
+    command: ["app"]
+    depends_on:
+      - data-downloader
     volumes:
       - .:/app
     ports:
       - "8050:8050"
-    
 
 volumes:
   minio_storage:

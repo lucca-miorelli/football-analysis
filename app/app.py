@@ -25,7 +25,8 @@ default_layout = go.Layout(
         xaxis={"showgrid": False, "zeroline": False, "showticklabels": False},
         yaxis={"showgrid": False, "zeroline": False, "showticklabels": False},
         plot_bgcolor="rgba(20, 20, 20, 0.9)",
-        paper_bgcolor="rgba(20, 20, 20, 0.9)"
+        paper_bgcolor="rgba(20, 20, 20, 0.9)",
+        margin=dict(t=40, b=40, l=40, r=40),
     )
 
 
@@ -65,7 +66,7 @@ def update_pass_analysis(game_id):
     temp_passes_between, temp_passers_avg_location = pass_analysis.plotly_test_network()
     title_text = f"{pass_analysis.team_name} vs {pass_analysis.opp_team_name}"
 
-    resize_factor = 29/50
+    resize_factor = 0.58
 
     # Update traces with new pass_analysis object
     traces = create_pitch(resize_factor=resize_factor)
@@ -125,7 +126,7 @@ def update_pass_analysis(game_id):
             "font":{
                 "size":(15*row["normalized_marker_size"]+8)*resize_factor,
                 "color":"white",
-                "family":"Arial, bold"
+                "family":"DIN Alternate, bold"
             },
             "xanchor":"center",
             "yanchor":"middle"
@@ -136,8 +137,8 @@ def update_pass_analysis(game_id):
             "text": title_text,
             "font": {
                 "color": "#808080",
-                "size": 24*resize_factor,  # adjust as needed
-                "family": "Arial, bold"
+                "size": 36*resize_factor,  # adjust as needed
+                "family":"DIN Alternate, bold"
             },
             "xanchor": "center",
             "yanchor": "top"
@@ -160,7 +161,8 @@ def update_pass_analysis(game_id):
         },
         annotations=annotations,
         plot_bgcolor="rgba(20, 20, 20, 0.9)",
-        paper_bgcolor="rgba(20, 20, 20, 0.9)"
+        paper_bgcolor="rgba(20, 20, 20, 0.9)",
+        margin=dict(t=40, b=40, l=40, r=40),
     )
 
     # Update player dropdown options
@@ -191,7 +193,7 @@ def update_player_passes(game_id, player_id=None):
     # player_passes = pass_analysis.get_player_passes(int(player_id))
     player_passes = pass_analysis.team_passes
 
-    resize_factor = 29/50
+    resize_factor = 0.58
 
     # If player_id is not None, filter passes by player_id
     if player_id:
@@ -278,8 +280,8 @@ def update_player_passes(game_id, player_id=None):
             "text": title_text,
             "font": {
                 "color": "#808080",
-                "size": 24*resize_factor,  # adjust as needed
-                "family": "Arial, bold"
+                "size": 36*resize_factor,  # adjust as needed
+                "family":"DIN Alternate, bold"
             },
             "xanchor": "center",
             "yanchor": "top"
@@ -302,7 +304,8 @@ def update_player_passes(game_id, player_id=None):
         },
         plot_bgcolor="rgba(20, 20, 20, 0.0)",
         paper_bgcolor="rgba(20, 20, 20, 0.9)",
-        annotations=annotations
+        annotations=annotations,
+        margin=dict(t=40, b=40, l=40, r=40),
     )
 
     return {"data": traces, "layout": layout}
@@ -329,7 +332,7 @@ def update_shot_chart(game_id, player_id=None):
         player_shots = player_shots[:100]
 
     annotations = []
-    resize_factor = 29/50
+    resize_factor = 0.58
 
     traces = create_pitch(resize_factor=resize_factor)
     for shot_obj in player_shots:
@@ -417,8 +420,8 @@ def update_shot_chart(game_id, player_id=None):
             "text": "Shots by Team",
             "font": {
                 "color": "#808080",
-                "size": 24*resize_factor,  # adjust as needed
-                "family": "Arial, bold"
+                "size": 36*resize_factor,  # adjust as needed
+                "family":"DIN Alternate, bold"
             },
             "xanchor": "center",
             "yanchor": "top"
@@ -441,7 +444,8 @@ def update_shot_chart(game_id, player_id=None):
         },
         plot_bgcolor="rgba(20, 20, 20, 0.9)",
         paper_bgcolor="rgba(20, 20, 20, 0.9)",
-        annotations=annotations  # Include the annotations here
+        annotations=annotations,  # Include the annotations here
+        margin=dict(t=40, b=40, l=40, r=40),
     )
 
     return {"data": traces, "layout": layout}
@@ -491,14 +495,18 @@ def update_radar_chart(game_id, player_id=None):
                 "gridcolor":"rgba(128, 128, 128, 0.5)",
                 "linecolor":"rgba(128, 128, 128, 0.5)",
                 "tickfont":{
-                    "color":"rgba(128, 128, 128, 1)"
-                }
+                    "color":"rgba(128, 128, 128, 1)",
+                    "size": 10,
+                    "family":"DIN Alternate, bold"
+                },
+                # "tickangle": -45  # rotate labels
             }
-       },
+        },
         plot_bgcolor="rgba(20, 20, 20, 0.9)",
         paper_bgcolor="rgba(20, 20, 20, 0.9)",
         width=600,
         height=533.33,
+        margin=dict(t=40, b=40, l=80, r=80),  # increase left and right margins
     )
 
     return {"data": data, "layout": layout}
@@ -521,7 +529,7 @@ def update_shot_bubble_chart(game_id, player_id=None):
             shot for shot in player_shots if shot["player"]["id"] == int(player_id)
         ]
 
-    resize_factor = 29/50
+    resize_factor = 0.58
 
     traces = create_pitch(resize_factor=resize_factor)
     for shot_obj in player_shots:
@@ -571,7 +579,40 @@ def update_shot_bubble_chart(game_id, player_id=None):
                 hovertemplate="%{text}<extra></extra>"
             )
         )
-    return {"data": traces, "layout": default_layout}
+
+    layout = go.Layout(
+        title={
+            "text": "Shots by Team",
+            "font": {
+                "color": "#808080",
+                "size": 36*resize_factor,  # adjust as needed
+                "family":"DIN Alternate, bold"
+            },
+            "xanchor": "center",
+            "yanchor": "top"
+        },
+        showlegend=False,
+        autosize=False,
+        width=1200*resize_factor,
+        height=800*resize_factor,
+        xaxis={
+            "showgrid":False,
+            "zeroline":False,
+            "showticklabels":False,
+            "range":[value*resize_factor for value in [0, 120]]
+        },
+        yaxis={
+            "showgrid": False,
+            "zeroline": False,
+            "showticklabels": False,
+            "range":[value*resize_factor for value in[0, 80]]
+        },
+        plot_bgcolor="rgba(20, 20, 20, 0.9)",
+        paper_bgcolor="rgba(20, 20, 20, 0.9)",
+        # annotations=annotations,  # Include the annotations here
+        margin=dict(t=40, b=40, l=40, r=40),
+    )
+    return {"data": traces, "layout": layout}
 
 
 app.layout = html.Div(children=[
@@ -703,4 +744,4 @@ app.layout = html.Div(children=[
 
 
 if __name__ == "__main__":
-    app.run_server(host='0.0.0.0', debug=True, port=8050)
+    app.run_server(host='0.0.0.0', debug=True, port=8060)

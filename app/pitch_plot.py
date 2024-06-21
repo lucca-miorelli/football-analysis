@@ -7,7 +7,7 @@ def create_pitch(resize_factor=1.0):
         x=[value*resize_factor for value in [0, 120, 120, 0, 0]],
         y=[value*resize_factor for value in [0, 0, 80, 80, 0]],
         mode='lines',
-        line=dict(color="#808080", width=2),
+        line=dict(color="#808080", width=2*resize_factor),
         hoverinfo='none'
     )
 
@@ -16,7 +16,7 @@ def create_pitch(resize_factor=1.0):
         x=[value*resize_factor for value in [60, 60]],
         y=[value*resize_factor for value in [0, 80]],
         mode='lines',
-        line=dict(color="#808080", width=2),
+        line=dict(color="#808080", width=2*resize_factor),
         hoverinfo='none'
     )
 
@@ -29,7 +29,7 @@ def create_pitch(resize_factor=1.0):
         x=h + r * np.cos(t),  # x0 + r*cos(t)
         y=k + r * np.sin(t),  # y0 + r*sin(t)
         mode='lines',
-        line=dict(color="#808080", width=2),
+        line=dict(color="#808080", width=2*resize_factor),
         hoverinfo='none'
     )
 
@@ -38,7 +38,7 @@ def create_pitch(resize_factor=1.0):
         x=[value*resize_factor for value in [120-16.5, 120-16.5, 120, 120, 120-16.5]],
         y=[value*resize_factor for value in [(80-40.32)/2, (80+40.32)/2, (80+40.32)/2, (80-40.32)/2, (80-40.32)/2]],
         mode='lines',
-        line=dict(color="#808080", width=2),
+        line=dict(color="#808080", width=2*resize_factor),
         hoverinfo='none'
     )
 
@@ -46,7 +46,7 @@ def create_pitch(resize_factor=1.0):
         x=[value*resize_factor for value in [0, 0, 16.5, 16.5, 0]],
         y=[value*resize_factor for value in [(80-40.32)/2, (80+40.32)/2, (80+40.32)/2, (80-40.32)/2, (80-40.32)/2]],
         mode='lines',
-        line=dict(color="#808080", width=2),
+        line=dict(color="#808080", width=2*resize_factor),
         hoverinfo='none'
     )
 
@@ -54,7 +54,7 @@ def create_pitch(resize_factor=1.0):
         x=[value*resize_factor for value in [120-5.5, 120-5.5, 120, 120, 120-5.5]],
         y=[value*resize_factor for value in [(80-18.32)/2, (80+18.32)/2, (80+18.32)/2, (80-18.32)/2, (80-18.32)/2]],
         mode='lines',
-        line=dict(color="#808080", width=2),
+        line=dict(color="#808080", width=2*resize_factor),
         hoverinfo='none'
     )
 
@@ -62,7 +62,7 @@ def create_pitch(resize_factor=1.0):
         x=[value*resize_factor for value in [0, 0, 5.5, 5.5, 0]],
         y=[value*resize_factor for value in [(80-18.32)/2, (80+18.32)/2, (80+18.32)/2, (80-18.32)/2, (80-18.32)/2]],
         mode='lines',
-        line=dict(color="#808080", width=2),
+        line=dict(color="#808080", width=2*resize_factor),
         hoverinfo='none'
     )
 
@@ -71,7 +71,7 @@ def create_pitch(resize_factor=1.0):
         x=[value*resize_factor for value in [120-11]],
         y=[value*resize_factor for value in [40]],
         mode='markers',
-        marker=dict(size=6, color="#808080"),
+        marker=dict(size=6*resize_factor, color="#808080"),
         hoverinfo='none'
     )
 
@@ -79,7 +79,7 @@ def create_pitch(resize_factor=1.0):
         x=[value*resize_factor for value in [11]],
         y=[value*resize_factor for value in [40]],
         mode='markers',
-        marker=dict(size=6, color="#808080"),
+        marker=dict(size=6*resize_factor, color="#808080"),
         hoverinfo='none'
     )
 
@@ -87,7 +87,7 @@ def create_pitch(resize_factor=1.0):
         x=[value*resize_factor for value in [60]],
         y=[value*resize_factor for value in [40]],
         mode='markers',
-        marker=dict(size=6, color="#808080"),
+        marker=dict(size=6*resize_factor, color="#808080"),
         hoverinfo='none'
     )
 
@@ -102,8 +102,8 @@ def create_pitch(resize_factor=1.0):
     y_positive = (np.sqrt(r**2 - (x-h)**2) + k)
     y_negative = (-np.sqrt(r**2 - (x-h)**2) + k)
 
-    penalty_arc1_trace_positive = go.Scatter(x=x, y=y_positive, mode='lines', marker=dict(color="#808080"))
-    penalty_arc1_trace_negative = go.Scatter(x=x, y=y_negative, mode='lines', marker=dict(color="#808080"))
+    penalty_arc1_trace_positive = go.Scatter(x=x, y=y_positive, mode='lines', line=dict(color="#808080", width=2*resize_factor), hoverinfo='none')
+    penalty_arc1_trace_negative = go.Scatter(x=x, y=y_negative, mode='lines', line=dict(color="#808080", width=2*resize_factor), hoverinfo='none')
 
     # Define the radius and the center for the second circle
     r = 9.15 * resize_factor
@@ -117,14 +117,14 @@ def create_pitch(resize_factor=1.0):
     y_negative = (-np.sqrt(r**2 - (x-h)**2) + k)
 
     # Create scatter plot for the second circle
-    penalty_arc2_trace_positive = go.Scatter(x=x, y=y_positive, mode='lines', marker=dict(color="#808080"))
-    penalty_arc2_trace_negative = go.Scatter(x=x, y=y_negative, mode='lines', marker=dict(color="#808080"))
+    penalty_arc2_trace_positive = go.Scatter(x=x, y=y_positive, mode='lines', line=dict(color="#808080", width=2*resize_factor), hoverinfo='none')
+    penalty_arc2_trace_negative = go.Scatter(x=x, y=y_negative, mode='lines', line=dict(color="#808080", width=2*resize_factor), hoverinfo='none')
 
     # Add a small linear section to meet at y=40
     x_linear = np.linspace((99.8591)*resize_factor, (99.8591)*resize_factor)
     y_linear = np.linspace((39.59095)*resize_factor, (40.40905)*resize_factor)
 
-    penalty_arc2_trace_linear = go.Scatter(x=x_linear, y=y_linear, mode='lines', marker=dict(color="#808080"))
+    penalty_arc2_trace_linear = go.Scatter(x=x_linear, y=y_linear, mode='lines', line=dict(color="#808080", width=2*resize_factor), hoverinfo='none')
 
     return [
         pitch_trace,

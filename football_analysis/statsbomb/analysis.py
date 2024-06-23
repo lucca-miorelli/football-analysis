@@ -450,3 +450,69 @@ class Event:
         self.event_count = dict(sorted(self.event_count.items()))
         self.opp_event_count = dict(sorted(self.opp_event_count.items()))
 
+
+    # def pass_events(self):
+    #     team_events = [
+    #         x
+    #         for x in self.data
+    #         if isinstance(x, dict)
+    #         and x.get('possession_team', {}).get('id') == 904
+    #         and x['type']['name'] == 'Pass'
+    #     ]
+
+    #     opponent_events = [
+    #         x
+    #         for x in self.data
+    #         if isinstance(x, dict)
+    #         # and x.get('possession_team', {}).get('id') != 904
+    #         and x['type']['name'] == 'Pass'
+    #     ]
+
+    #     if self.player_id is not None:
+    #         # Filter team_events by player_id
+    #         team_events = [
+    #             x
+    #             for x in team_events
+    #             if x.get('player', {}).get('id', None) == int(self.player_id)
+    #         ]
+
+    #         # Filter opponent_events by player_id (so it gets filtered out)
+    #         opponent_events = [
+    #             x
+    #             for x in opponent_events
+    #             if x.get('player', {}).get('id', None) == int(self.player_id)
+    #         ]
+
+    #     status_count = dict(
+    #         Counter([
+    #             x.get('outcome').get('name') if isinstance(x.get('outcome'), dict) else 'Complete' for x in team_events
+    #         ])
+    #     )
+
+    #     self.pass_status_count = dict(sorted(status_count.items()))
+
+
+class MatchInfo:
+    def __init__(self, game_id:str|None=None):
+        self.game_id = game_id
+        if game_id is not None:
+            data = pd.read_json(os.path.join('data', 'matches', '9', '281.json'))
+            self.data = data.loc[data.match_id == int(game_id)]
+            self.get_match_info()
+
+    def get_match_info(self):
+        self.match_info = {
+            'home_team': self.data.home_team.values[0],
+            'away_team': self.data.away_team.values[0],
+            'home_score': self.data.home_score.values[0],
+            'away_score': self.data.away_score.values[0],
+            'competition': self.data.competition.values[0],
+            'season': self.data.season.values[0],
+            'kick_off': self.data.kick_off.values[0],
+            'metadata': self.data.metadata.values[0],
+            'stadium': self.data.stadium.values[0],
+            'referee': self.data.referee.values[0]
+        }
+        print(self.match_info)
+        return self.match_info
+

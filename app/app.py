@@ -9,7 +9,7 @@ import math
 from football_analysis.config.constant import (
     GAME_ID_TITLE,
 )
-from football_analysis.statsbomb.analysis import Event, PassAnalysis, ShotAnalysis
+from football_analysis.statsbomb.analysis import Event, PassAnalysis, ShotAnalysis, MatchInfo
 
 
 app = Dash(
@@ -614,6 +614,26 @@ def update_shot_bubble_chart(game_id, player_id=None):
     )
     return {"data": traces, "layout": layout}
 
+@ app.callback(
+    Output("match-info", "children"),
+    [Input("game-dropdown", "value")]
+)
+def update_match_info(game_id=None):
+    """Update the match info."""
+    if game_id:
+        match = MatchInfo(game_id=game_id)
+
+        home_team = match.match_info.get("home_team", {}).get("home_team_name", "Home Team")
+        away_team = match.match_info.get("away_team", {}).get("away_team_name", "Away Team")
+        home_score = match.match_info.get("home_score", 0)
+        away_score = match.match_info.get("away_score", 0)
+
+        match_scoreboard = f"{home_team} {home_score} x {away_score} {away_team}"
+    else:
+        match_scoreboard = "No match info available"
+
+    return match_scoreboard
+
 
 app.layout = html.Div(children=[
     html.Div(className="header-section", style={'textAlign': 'center'}, children=[
@@ -658,6 +678,10 @@ app.layout = html.Div(children=[
 
         # html.Div(id='player-id-output', style={'color': '#808080'}),
     ]),
+    html.Div(id="match-info-div", children=[
+        html.H2(id="match-info", style={"textAlign": "center", "color": "#808080"}),
+    ], style={"textAlign": "center", "color": "#808080"}
+    ),
     html.Div(className="pitch-graphs-section", children=[
         html.Div(id="pass-network-container", children=[
             dcc.Graph(

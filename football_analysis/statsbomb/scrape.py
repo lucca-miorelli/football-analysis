@@ -1,15 +1,13 @@
 import json
-import logging
 from dataclasses import dataclass
-import os
-
-from football_analysis.config import cc
 
 import boto3
 from botocore.client import BaseClient
-from botocore.exceptions import ClientError
 from mypy_boto3_s3 import ServiceResource
 from mypy_boto3_s3.service_resource import Bucket
+
+from football_analysis.config import cc
+
 
 @dataclass
 class AWS:
@@ -29,6 +27,10 @@ class AWS:
             endpoint_url=cc.AWS_ENDPOINT_URL,
         )
         self.bucket: Bucket = self.resource.Bucket(cc.AWS_BUCKET_NAME)
-    
-    def save_to_json(self, data:dict, path:str, file_name:str):
-        self.client.put_object(Body=json.dumps(data), Bucket=cc.AWS_BUCKET_NAME, Key=f"{path}/{file_name}.json")
+
+    def save_to_json(self, data: dict, path: str, file_name: str):
+        self.client.put_object(
+            Body=json.dumps(data),
+            Bucket=cc.AWS_BUCKET_NAME,
+            Key=f"{path}/{file_name}.json",
+        )
